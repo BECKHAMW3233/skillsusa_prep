@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Full Packet - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Full Packet Simulation</h1>
+<p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+  The real contest format: a packet of 3-4 separate programs under one shared clock.
+  Work through them in any order, hand each one in when it's done, and see how your
+  pacing across the whole packet holds up -- a strong 3/4 beats one flawless program
+  and two unfinished ones.
+</p>
+
+<div class="card">
+  <h3>Auto-Generate a Packet</h3>
+  <form method="post" action="{{ url_for('packet_start') }}">
+    <input type="hidden" name="mode" value="auto">
+    <label>Number of Programs</label>
+    <select name="count">
+      <option value="4">4 (typical national packet size)</option>
+      <option value="3">3</option>
+    </select>
+    <p style="font-size:11px; color:var(--muted); margin:6px 0 0;">
+      Draws distinct problems favoring different categories, the way a technical
+      committee would -- you don't get to see what's coming, same as the real thing.
+    </p>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn green" type="submit">Generate &amp; Begin Packet</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Or Build Your Own Packet</h3>
+  <p style="font-size:12px; color:var(--muted); margin-top:-4px;">
+    Pick 3 or 4 specific programs -- useful for targeting categories you want extra
+    reps on. (Full mock projects and certification Skill Builder problems aren't
+    included here since they're not part of a realistic SkillsUSA packet.)
+  </p>
+  <form method="post" action="{{ url_for('packet_start') }}">
+    <input type="hidden" name="mode" value="manual">
+    <div style="max-height:340px; overflow-y:auto; border:1px solid var(--card-border); border-radius:5px; padding:6px 10px; margin-top:8px;">
+      {% for p in problems %}
+      <label class="choice-option" style="display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" name="problem_id" value="{{ p.id }}" style="margin:0;">
+        <span>
+          <strong>{{ p.title }}</strong>
+          <span style="font-size:11px; color:var(--muted);">&mdash; {{ p.category }}, {{ p.difficulty }}, {{ p.time_limit_min }} min</span>
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+    <p style="font-size:11px; color:var(--muted); margin:8px 0 0;">Select exactly 3 or 4 programs.</p>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn blue" type="submit">Begin This Packet</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

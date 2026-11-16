@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Mock Result - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Mock Competition Result</h1>
+
+<div class="card">
+  <h3>{{ result.problem_title }}</h3>
+  <div class="stat-row">
+    <div class="stat-box {{ 'good' if result.tests.all_passed else 'bad' }}">
+      <div class="value">{{ result.tests.passed }}/{{ result.tests.total }}</div>
+      <div class="label">Coding tests passed</div>
+    </div>
+    <div class="stat-box {{ 'good' if result.quiz.score_pct >= 80 else ('bad' if result.quiz.score_pct < 60 else '') }}">
+      <div class="value">{{ result.quiz.score_pct }}%</div>
+      <div class="label">Knowledge test ({{ result.quiz.correct }}/{{ result.quiz.total }})</div>
+    </div>
+  </div>
+</div>
+
+{% if not result.tests.all_passed %}
+<div class="card">
+  <h3>Failed Coding Tests</h3>
+  {% for r in result.tests.results %}
+  {% if not r.passed %}
+  <div class="test-result fail">
+    <strong>Test {{ loop.index }}: FAIL</strong>
+    <div>stdin:</div><pre>{{ r.stdin }}</pre>
+    <div>expected to contain:</div><pre>{{ r.expect }}</pre>
+    <div>your output:</div><pre>{{ r.stdout or '(empty)' }}</pre>
+    {% if r.stderr %}<div>error:</div><pre>{{ r.stderr }}</pre>{% endif %}
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+  <h3>Knowledge Test Review</h3>
+  {% for r in result.quiz.results %}
+  <div class="quiz-question">
+    <div class="q-text">{{ loop.index }}. {{ r.question }}</div>
+    {% for choice in r.choices %}
+    {% set idx = loop.index0 %}
+    <div class="choice-option {{ 'correct' if idx == r.answer else ('incorrect' if idx == r.chosen else '') }}">
+      {{ choice }}
+      {% if idx == r.answer %} &mdash; correct answer{% endif %}
+    </div>
+    {% endfor %}
+    <div style="font-size:12px; color:var(--muted-strong); margin-top:6px;">{{ r.explanation }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="btn-row">
+  <a class="btn green" href="{{ url_for('mock_setup') }}">Run Another Mock Competition</a>
+  <a class="btn gray" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+{% endblock %}

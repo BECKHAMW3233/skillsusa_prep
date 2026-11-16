@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Log Drill - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Log a Freeform Drill</h1>
+<p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+  Use this for practice done outside the Problem Bank (e.g. a problem from a past competition packet).
+  For bank problems, log from the problem's own page so it links to the auto-graded results.
+</p>
+
+{% if request.args.get('logged') %}<p style="color:var(--green); font-size:13px;">Saved.</p>{% endif %}
+
+<div class="card">
+  <form method="post">
+    <label>Problem Type</label>
+    <select name="problem_type">
+      {% for t in problem_types %}
+      <option value="{{ t }}">{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Time to Complete (minutes)</label>
+    <input type="number" name="time_min" min="0" value="30">
+
+    {% for c in rubric %}
+    <div class="score-row">
+      <div class="score-label">{{ c }}</div>
+      <input type="range" min="0" max="10" value="7" name="score_{{ c }}"
+             oninput="this.nextElementSibling.textContent = this.value">
+      <div class="score-value">7</div>
+    </div>
+    {% endfor %}
+
+    <label>Notes (optional)</label>
+    <textarea name="notes" rows="3"></textarea>
+
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn green" type="submit">Save Drill Session</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

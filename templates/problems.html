@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Problem Bank - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Problem Bank</h1>
+
+<form class="filter-row" method="get">
+  <div class="field">
+    <label>Category</label>
+    <select name="category" onchange="this.form.submit()">
+      <option value="">All categories</option>
+      {% for c in categories %}
+      <option value="{{ c }}" {{ 'selected' if c == selected_category }}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label>Difficulty</label>
+    <select name="difficulty" onchange="this.form.submit()">
+      <option value="">All difficulties</option>
+      {% for d in difficulties %}
+      <option value="{{ d }}" {{ 'selected' if d == selected_difficulty }}>{{ d }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<div class="card">
+  {% if problems %}
+  {% for p in problems %}
+  <div class="problem-list-item">
+    <div>
+      <a class="problem-title" href="{{ url_for('problem_detail', problem_id=p.id) }}">{{ p.title }}</a>
+      {% if p.id in attempted_ids %}<span class="attempted-flag">&#10003; attempted</span>{% endif %}
+      <div class="problem-meta">{{ p.category }} &middot; suggested {{ p.time_limit_min }} min</div>
+    </div>
+    <span class="badge {{ p.difficulty | lower }}">{{ p.difficulty }}</span>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p class="empty-state">No problems match those filters.</p>
+  {% endif %}
+</div>
+{% endblock %}

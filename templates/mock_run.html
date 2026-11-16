@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Mock Competition - SkillsUSA Trainer{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1 class="page-title">Mock Competition in Progress</h1>
+
+<div class="card" style="max-width:420px;">
+  <div class="timer-display" id="clock">00:00</div>
+  <div class="timer-status" id="status">Budget: {{ total_minutes }} min &mdash; click Start</div>
+  <div class="timer-overtime" id="overtime"></div>
+  <div class="btn-row" style="justify-content:center; margin-top:10px;">
+    <button type="button" class="btn green" id="start-btn" style="width:110px;">Start</button>
+  </div>
+</div>
+
+<form method="post" action="{{ url_for('mock_submit') }}" id="mock-form">
+  <div class="card">
+    <h3>Part 1: Knowledge Test</h3>
+    {% for q in questions %}
+    <div class="quiz-question">
+      <div class="q-topic">{{ q.topic }}</div>
+      <div class="q-text">{{ loop.index }}. {{ q.question }}</div>
+      {% for choice in q.choices %}
+      <label class="choice-option">
+        <input type="radio" name="answer_{{ q.id }}" value="{{ loop.index0 }}">
+        {{ choice }}
+      </label>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h3>Part 2: {{ problem.title }}</h3>
+    <div class="tag-row">
+      <span class="badge {{ problem.difficulty | lower }}">{{ problem.difficulty }}</span>
+      <span class="badge neutral">{{ problem.category }}</span>
+    </div>
+    <div class="prompt-box">{{ problem.prompt }}</div>
+    <textarea id="code-editor">{{ problem.starter_code }}</textarea>
+    <textarea name="code" id="code-hidden" style="display:none;"></textarea>
+  </div>
+
+  <div class="card">
+    <h3>Self-Score Your Code (rubric)</h3>
+    {% for c in rubric %}
+    <div class="score-row">
+      <div class="score-label">{{ c }}</div>
+      <input type="range" min="0" max="10" value="7" name="score_{{ c }}"
+             oninput="this.nextElementSibling.textContent = this.value">
+      <div class="score-value">7</div>
+    </div>
+    {% endfor %}
+    <label>Notes (optional)</label>
+    <textarea name="notes" rows="3"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn green" type="submit" onclick="document.getElementById('code-hidden').value = editor.getValue();">
+      Finish &amp; Grade Mock Competition
+    </button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script>
+const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+  mode: 'python', lineNumbers: true, indentUnit: 4, tabSize: 4,
+  extraKeys: {"Tab": function(cm) { cm.replaceSelection("    "); }}
+});
+
+createDrillTimer({
+  clockId: 'clock', statusId: 'status', overtimeId: 'overtime',
+  startBtnId: 'start-btn', resetBtnId: null,
+  getTargetMinutes: () => {{ total_minutes }}
+});
+
+document.getElementById('mock-form').addEventListener('submit', function() {
+  document.getElementById('code-hidden').value = editor.getValue();
+});
+</script>
+{% endblock %}

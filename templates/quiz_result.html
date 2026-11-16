@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Quiz Result - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Quiz Result: {{ topic }}</h1>
+
+<div class="card">
+  <div class="stat-row">
+    <div class="stat-box {{ 'good' if graded.score_pct >= 80 else ('bad' if graded.score_pct < 60 else '') }}">
+      <div class="value">{{ graded.score_pct }}%</div>
+      <div class="label">{{ graded.correct }}/{{ graded.total }} correct</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Review</h3>
+  {% for r in graded.results %}
+  <div class="quiz-question">
+    <div class="q-text">{{ loop.index }}. {{ r.question }}</div>
+    {% for choice in r.choices %}
+    {% set idx = loop.index0 %}
+    <div class="choice-option {{ 'correct' if idx == r.answer else ('incorrect' if idx == r.chosen else '') }}">
+      {{ choice }}
+      {% if idx == r.answer %} &mdash; correct answer{% endif %}
+      {% if idx == r.chosen and idx != r.answer %} &mdash; your answer{% endif %}
+    </div>
+    {% endfor %}
+    <div style="font-size:12px; color:var(--muted-strong); margin-top:6px;">{{ r.explanation }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="btn-row">
+  <a class="btn green" href="{{ url_for('quiz_setup') }}">Take Another Quiz</a>
+  <a class="btn gray" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+{% endblock %}

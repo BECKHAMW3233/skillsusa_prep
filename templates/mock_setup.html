@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Mock Competition - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Mock Competition</h1>
+<p style="font-size:12px; color:var(--muted); margin-top:-8px;">
+  Simulates competition day: a timed knowledge-test block followed by a timed coding problem,
+  scored and logged together as one session.
+</p>
+
+<div class="card">
+  <form method="post" action="{{ url_for('mock_start') }}">
+    <label>Coding Problem</label>
+    <select name="problem_id" required>
+      {% for p in problems %}
+      <option value="{{ p.id }}">{{ p.title }} ({{ p.category }}, {{ p.difficulty }})</option>
+      {% endfor %}
+    </select>
+
+    <label>Knowledge Topic</label>
+    <select name="topic">
+      <option value="">Mixed Review</option>
+      {% for t in topics %}
+      {% if t != "Mixed Review" %}
+      <option value="{{ t }}">{{ t }}</option>
+      {% endif %}
+      {% endfor %}
+    </select>
+
+    <label>Number of Knowledge Questions</label>
+    <input type="number" name="count" value="8" min="3" max="25">
+
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn green" type="submit">Begin Mock Competition</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

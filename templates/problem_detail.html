@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}{{ problem.title }} - SkillsUSA Trainer{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1 class="page-title">{{ problem.title }}</h1>
+<div class="tag-row">
+  <span class="badge {{ problem.difficulty | lower }}">{{ problem.difficulty }}</span>
+  <span class="badge neutral">{{ problem.category }}</span>
+  <span class="badge neutral">Suggested time: {{ problem.time_limit_min }} min</span>
+</div>
+
+<div class="card">
+  <h3>Problem Statement</h3>
+  <div class="prompt-box">{{ problem.prompt }}</div>
+  {% if problem.hints %}
+  <div id="hint-area" style="margin-top:10px;">
+    <button type="button" class="btn small gray" id="hint-btn" onclick="showNextHint()">Show a hint (0/{{ problem.hints|length }})</button>
+    <div id="hint-list"></div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Your Solution</h3>
+  <textarea id="code-editor">{{ problem.starter_code }}</textarea>
+  <div class="btn-row" style="margin-top:10px;">
+    <button class="btn blue" id="run-btn" onclick="runTests()">Run Tests</button>
+    <button class="btn gray" id="reveal-btn" onclick="revealSolution()">Reveal Solution</button>
+    <span id="run-status" style="font-size:12px; color:var(--muted);"></span>
+  </div>
+  <div id="test-results" style="margin-top:12px;"></div>
+  <pre id="solution-box" style="display:none; margin-top:12px; background:var(--code-bg); padding:10px; border-radius:5px; font-size:12px; overflow-x:auto;">{{ problem.reference_solution }}</pre>
+</div>
+
+<div class="card">
+  <h3>Log This Attempt</h3>
+  {% if request.args.get('logged') %}<p style="color:var(--green); font-size:13px;">Saved.</p>{% endif %}
+  <form method="post" action="{{ url_for('problem_log', problem_id=problem.id) }}">
+    <input type="hidden" name="tests_passed" id="field-tests-passed" value="">
+    <input type="hidden" name="tests_total" id="field-tests-total" value="">
+
+    <label>Time Spent (minutes)</label>
+    <input type="number" name="time_min" min="0" value="{{ problem.time_limit_min }}">
+
+    {% for c in rubric %}
+    <div class="score-row">
+      <div class="score-label">{{ c }}</div>
+      <input type="range" min="0" max="10" value="7" name="score_{{ c }}"
+             oninput="this.nextElementSibling.textContent = this.value">
+      <div class="score-value">7</div>
+    </div>
+    {% endfor %}
+
+    <label>Notes (optional)</label>
+    <textarea name="notes" rows="3"></textarea>
+
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn green" type="submit">Save Drill Session</button>
+    </div>
+  </form>
+</div>
+
+<script>
+const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+  mode: 'python',
+  lineNumbers: true,
+  indentUnit: 4,
+  tabSize: 4,
+  indentWithTabs: false,
+  extraKeys: {"Tab": function(cm) { cm.replaceSelection("    "); }}
+});
+
+const hints = {{ (problem.hints or []) | tojson }};
+let hintIndex = 0;
+function showNextHint() {
+  if (hintIndex >= hints.length) return;
+  const div = document.createElement('div');
+  div.className = 'hint-box';
+  div.textContent = hints[hintIndex];
+  document.getElementById('hint-list').appendChild(div);
+  hintIndex++;
+  document.getElementById('hint-btn').textContent = `Show a hint (${hintIndex}/${hints.length})`;
+  if (hintIndex >= hints.length) document.getElementById('hint-btn').disabled = true;
+}
+
+function revealSolution() {
+  const box = document.getElementById('solution-box');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+async function runTests() {
+  const btn = document.getElementById('run-btn');
+  const status = document.getElementById('run-status');
+  const resultsDiv = document.getElementById('test-results');
+  btn.disabled = true;
+  status.textContent = 'Running...';
+  resultsDiv.innerHTML = '';
+
+  try {
+    const resp = await fetch(window.location.pathname + '/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({code: editor.getValue()})
+    });
+    const data = await resp.json();
+    status.textContent = `${data.passed}/${data.total} tests passed`;
+    document.getElementById('field-tests-passed').value = data.passed;
+    document.getElementById('field-tests-total').value = data.total;
+
+    data.results.forEach((r, i) => {
+      const div = document.createElement('div');
+      div.className = 'test-result ' + (r.passed ? 'pass' : 'fail');
+      let html = `<strong>Test ${i + 1}: ${r.passed ? 'PASS' : 'FAIL'}</strong>`;
+      if (!r.passed) {
+        html += `<div>stdin:</div><pre>${escapeHtml(r.stdin)}</pre>`;
+        html += `<div>expected to contain:</div><pre>${escapeHtml(r.expect)}</pre>`;
+        html += `<div>your output:</div><pre>${escapeHtml(r.stdout || '(empty)')}</pre>`;
+        if (r.stderr) html += `<div>error:</div><pre>${escapeHtml(r.stderr)}</pre>`;
+        if (r.timed_out) html += `<div style="color:var(--red);">Timed out.</div>`;
+      }
+      div.innerHTML = html;
+      resultsDiv.appendChild(div);
+    });
+  } catch (e) {
+    status.textContent = 'Error running tests.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+</script>
+{% endblock %}

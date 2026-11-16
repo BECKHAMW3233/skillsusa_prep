@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Packet Result - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Packet Result</h1>
+
+<div class="stat-row">
+  <div class="stat-box {{ 'good' if result.submitted_count == result.total_count else 'bad' }}">
+    <div class="value">{{ result.submitted_count }}/{{ result.total_count }}</div>
+    <div class="label">Programs Handed In</div>
+  </div>
+  <div class="stat-box">
+    <div class="value">{{ result.total_minutes }}<span style="font-size:14px;">/{{ result.target_minutes }} min</span></div>
+    <div class="label">Time Used / Budget</div>
+  </div>
+  {% if result.tests_total_sum %}
+  <div class="stat-box {{ 'good' if result.tests_passed_total == result.tests_total_sum else 'bad' }}">
+    <div class="value">{{ result.tests_passed_total }}/{{ result.tests_total_sum }}</div>
+    <div class="label">Tests Passed (handed-in programs)</div>
+  </div>
+  {% endif %}
+  {% if result.avg_rubric is not none %}
+  <div class="stat-box"><div class="value">{{ result.avg_rubric }}/10</div><div class="label">Avg Self-Rubric Score</div></div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Pacing</h3>
+  {% if result.submitted_count == result.total_count and result.total_minutes <= result.target_minutes %}
+  <p style="font-size:13px; color:var(--green); font-weight:700;">
+    Every program handed in, within budget -- exactly the pacing that scores well at a real contest.
+  </p>
+  {% elif result.submitted_count == result.total_count %}
+  <p style="font-size:13px; color:var(--orange); font-weight:700;">
+    Every program got handed in, but you ran over your packet's suggested time budget by
+    {{ result.total_minutes - result.target_minutes }} min. Worth drilling faster on whichever program ate the most time.
+  </p>
+  {% elif result.submitted_count > 0 %}
+  <p style="font-size:13px; color:var(--orange); font-weight:700;">
+    {{ result.submitted_count }} of {{ result.total_count }} handed in. Remember the contest's own lesson: a strong
+    {{ result.submitted_count }}/{{ result.total_count }} beats one flawless program and the rest left unfinished --
+    but getting all {{ result.total_count }} done is still the goal to build toward.
+  </p>
+  {% else %}
+  <p style="font-size:13px; color:var(--red); font-weight:700;">
+    Nothing got handed in this run. That's fine for a first pass -- the point of packet mode is practicing
+    the pacing decision of when to cut your losses on a program and move to the next one.
+  </p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Per-Program Breakdown</h3>
+  <table class="data-table">
+    <tr><th>Program</th><th>Category</th><th>Difficulty</th><th>Status</th><th>Tests</th><th>Handed In At</th></tr>
+    {% for r in result.results %}
+    <tr>
+      <td>{{ r.title }}</td>
+      <td>{{ r.category }}</td>
+      <td><span class="badge {{ r.difficulty | lower }}">{{ r.difficulty }}</span></td>
+      <td>
+        {% if r.submitted %}
+        <span style="color:var(--green); font-weight:700;">&#10003; Submitted</span>
+        {% else %}
+        <span style="color:var(--red); font-weight:700;">Not handed in</span>
+        {% endif %}
+      </td>
+      <td>{% if r.tests_total %}{{ r.tests_passed }}/{{ r.tests_total }}{% endif %}</td>
+      <td>{% if r.handin_minute is not none %}{{ r.handin_minute }} min{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="btn-row">
+  <a class="btn green" href="{{ url_for('packet_setup') }}">Run Another Packet</a>
+  <a class="btn gray" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Full Packet - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Packet In Progress</h1>
+
+<div class="card" style="max-width:420px;">
+  <div class="timer-display" id="clock">00:00</div>
+  <div class="timer-status" id="status">Budget: {{ target_minutes }} min</div>
+  <div class="timer-overtime" id="overtime"></div>
+  <p style="font-size:11px; color:var(--muted); text-align:center; margin-top:8px;">
+    The clock runs continuously for the whole packet -- it doesn't pause while you
+    move between programs, just like the real thing.
+  </p>
+</div>
+
+<div class="card">
+  <h3>Your Programs</h3>
+  {% for p in problems %}
+  {% set h = handins.get(p.id) %}
+  <div class="problem-list-item">
+    <div>
+      <a class="problem-title" href="{{ url_for('packet_problem', problem_id=p.id) }}">{{ p.title }}</a>
+      <div class="problem-meta">{{ p.category }} &middot; suggested {{ p.time_limit_min }} min</div>
+      {% if h %}
+      <div style="font-size:12px; color:var(--green); font-weight:700; margin-top:2px;">
+        &#10003; Handed in at {{ h.handin_minute }} min
+        {% if h.tests_total %} &middot; {{ h.tests_passed }}/{{ h.tests_total }} tests{% endif %}
+      </div>
+      {% else %}
+      <div style="font-size:12px; color:var(--muted); margin-top:2px;">Not started</div>
+      {% endif %}
+    </div>
+    <span class="badge {{ p.difficulty | lower }}">{{ p.difficulty }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h3>Finish the Packet</h3>
+  <p style="font-size:12px; color:var(--muted);">
+    You can hand in programs in any order and revisit one you already submitted. When
+    you're done (or time's up), finish the packet to see your full-packet results and
+    log this session to your history.
+  </p>
+  <form method="post" action="{{ url_for('packet_finish') }}" onsubmit="return confirm('Finish this packet? Any unsubmitted programs will be recorded as not handed in.');">
+    <div class="btn-row">
+      <button class="btn red" type="submit">Finish Packet</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script>
+const packetTimer = createDrillTimer({
+  clockId: 'clock', statusId: 'status', overtimeId: 'overtime',
+  initialElapsedMs: {{ elapsed_ms }},
+  getTargetMinutes: () => {{ target_minutes }},
+});
+packetTimer.start();
+</script>
+{% endblock %}

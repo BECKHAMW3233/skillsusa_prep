@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Timer - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Drill Timer</h1>
+
+<div class="card" style="max-width:480px; margin: 0 auto;">
+  <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:6px;">
+    <label style="margin:0;">Target (min):</label>
+    <input type="number" id="target-min" value="30" min="0" style="width:70px;">
+  </div>
+  <div class="timer-display" id="clock">00:00</div>
+  <div class="timer-status" id="status">Ready</div>
+  <div class="timer-overtime" id="overtime"></div>
+  <div class="btn-row" style="justify-content:center; margin-top:16px;">
+    <button class="btn green" id="start-btn" style="width:110px;">Start</button>
+    <button class="btn gray" id="reset-btn" style="width:110px;">Reset</button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+<script>
+createDrillTimer({
+  clockId: 'clock', statusId: 'status', overtimeId: 'overtime',
+  startBtnId: 'start-btn', resetBtnId: 'reset-btn',
+  getTargetMinutes: () => parseInt(document.getElementById('target-min').value || '0', 10)
+});
+</script>
+{% endblock %}

@@ -1,0 +1,86 @@
+{
+  "drills": [],
+  "knowledge_sessions": [
+    {
+      "id": 1,
+      "date": "2026-09-22",
+      "topic": "Mixed Review",
+      "num_questions": 10,
+      "num_correct": 10,
+      "score_pct": 100.0,
+      "source": "quiz"
+    }
+  ],
+  "knowledge_attempts": {
+    "objective_c_basics_10": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "python_oop_10": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "python_core_syntax_20": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "php_basics_09": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "python_algorithms_04": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "python_core_syntax_14": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "python_file_i_o_09": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "python_oop_13": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "python_algorithms_19": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    },
+    "python_oop_14": {
+      "seen": 1,
+      "correct": 1,
+      "last_date": "2026-09-22",
+      "last_correct": true
+    }
+  },
+  "mock_sessions": [],
+  "packet_sessions": [],
+  "settings": {
+    "current_phase": 0,
+    "competition_date_state": "",
+    "competition_date_nationals": "",
+    "notes": "",
+    "track": "All"
+  },
+  "next_id": 2
+}

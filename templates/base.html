@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem('theme');
+    var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch (e) {}
+})();
+</script>
+<title>{% block title %}SkillsUSA Trainer{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    {% if CURRENT_TRACK in ('All', 'SkillsUSA') %}
+    <span class="brand">SkillsUSA Competition Trainer</span>
+    {% else %}
+    <span class="brand">{{ TRACK_LABELS[CURRENT_TRACK] }}</span>
+    {% endif %}
+  </div>
+  <div class="topbar-right">
+    <form method="post" action="{{ url_for('set_track') }}" style="margin:0;">
+      <select name="track" class="track-select" onchange="this.form.submit()" title="Training track -- narrows the Problem Bank and Knowledge Quiz to just this goal">
+        <option value="All" {{ 'selected' if CURRENT_TRACK == 'All' }}>All Content</option>
+        {% for t in ALL_TRACKS %}
+        <option value="{{ t }}" {{ 'selected' if CURRENT_TRACK == t }}>{{ t }}{{ ' Track' if t == 'SkillsUSA' else '' }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    {% if CURRENT_TRACK in ('All', 'SkillsUSA') %}
+    <span>Spring 2027 &middot; NC State &amp; Nationals</span>
+    {% endif %}
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">&#127753;</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">Dashboard</a>
+  <a href="{{ url_for('problems_list') }}" class="{{ 'active' if request.endpoint in ('problems_list','problem_detail') }}">Problem Bank</a>
+  <a href="{{ url_for('drill_log') }}" class="{{ 'active' if request.endpoint == 'drill_log' }}">Log Drill</a>
+  <a href="{{ url_for('quiz_setup') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('quiz') }}">Knowledge Quiz</a>
+  {% if CURRENT_TRACK in ('All', 'SkillsUSA') %}
+  <a href="{{ url_for('mock_setup') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('mock') }}">Mock Competition</a>
+  <a href="{{ url_for('packet_setup') }}" class="{{ 'active' if request.endpoint and request.endpoint.startswith('packet') }}">Full Packet</a>
+  {% endif %}
+  <a href="{{ url_for('timer_page') }}" class="{{ 'active' if request.endpoint == 'timer_page' }}">Timer</a>
+  <a href="{{ url_for('history') }}" class="{{ 'active' if request.endpoint == 'history' }}">History</a>
+  <a href="{{ url_for('progress') }}" class="{{ 'active' if request.endpoint == 'progress' }}">Progress</a>
+  {% if CURRENT_TRACK in ('All', 'SkillsUSA') %}
+  <a href="{{ url_for('competition_format') }}" class="{{ 'active' if request.endpoint == 'competition_format' }}">Competition Format</a>
+  {% endif %}
+  <a href="{{ url_for('settings_page') }}" class="{{ 'active' if request.endpoint == 'settings_page' }}">Settings</a>
+</nav>
+
+<main class="page">
+  {% block content %}{% endblock %}
+</main>
+
+
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

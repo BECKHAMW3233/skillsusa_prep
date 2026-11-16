@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Training Overview</h1>
+
+{% if CURRENT_TRACK not in ('All', 'SkillsUSA') and cert_info %}
+<div class="card">
+  <h3>{{ cert_info.full_name }}</h3>
+  <p style="font-size:12px; color:var(--muted); margin-top:-4px;">
+    Exam code {{ cert_info.exam_code }}. The Problem Bank and Knowledge Quiz below only show
+    {{ CURRENT_TRACK }} content -- switch back to "All Content" or "SkillsUSA" up top for the
+    contest countdown, phase plan, and Mock/Packet modes.
+  </p>
+  <div class="stat-row">
+    <div class="stat-box"><div class="value">{{ cert_info.duration_min }}<span style="font-size:13px;">&nbsp;min</span></div><div class="label">Exam Time Limit</div></div>
+    <div class="stat-box"><div class="value">{{ cert_info.questions }}</div><div class="label">Questions</div></div>
+    <div class="stat-box"><div class="value">{{ cert_info.pass_pct }}%</div><div class="label">Pass Score</div></div>
+  </div>
+  <p style="font-size:11px; color:var(--muted); margin:10px 0 0;">
+    {{ cert_info.format }} Plus {{ cert_info.nda_tutorial_min }} minutes beforehand for the
+    NDA/tutorial, which doesn't count against your answering time. Prerequisites: {{ cert_info.prerequisites }}
+  </p>
+</div>
+{% endif %}
+
+{% if CURRENT_TRACK in ('All', 'SkillsUSA') %}
+{% if days_state is not none or days_nationals is not none %}
+<div class="card">
+  <h3>Countdown</h3>
+  <div class="countdown-row">
+    {% if days_state is not none %}
+    <div class="countdown-box">
+      <div class="num">{{ days_state }}</div>
+      <div class="lbl">days to NC State</div>
+    </div>
+    {% endif %}
+    {% if days_nationals is not none %}
+    <div class="countdown-box">
+      <div class="num">{{ days_nationals }}</div>
+      <div class="lbl">days to Nationals</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <p class="empty-state">No competition dates set yet. Add them on the <a href="{{ url_for('settings_page') }}">Settings</a> page to see a countdown here.</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3>Current Phase</h3>
+  <form method="post" action="{{ url_for('set_phase') }}">
+    {% for pnum, pname, dates, desc in phases %}
+    <label class="phase-row" style="cursor:pointer;">
+      <input class="phase-radio" type="radio" name="phase" value="{{ loop.index0 }}"
+             {{ 'checked' if loop.index0 == current_phase }} onchange="this.form.submit()">
+      <span>
+        <span class="phase-name">{{ pnum }}: {{ pname }}</span>
+        <span style="color:var(--muted); font-size:11px;">[{{ dates }}]</span><br>
+        <span class="phase-desc">{{ desc }}</span>
+      </span>
+    </label>
+    {% endfor %}
+  </form>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3>Session Stats</h3>
+  <div class="stat-row">
+    <div class="stat-box"><div class="value">{{ total_drills }}</div><div class="label">Drill Sessions</div></div>
+    <div class="stat-box"><div class="value">{{ total_quiz_sessions }}</div><div class="label">Quiz Sessions</div></div>
+    {% if CURRENT_TRACK in ('All', 'SkillsUSA') %}
+    <div class="stat-box"><div class="value">{{ total_mocks }}</div><div class="label">Mock Competitions</div></div>
+    <div class="stat-box"><div class="value">{{ total_packets }}</div><div class="label">Full Packets</div></div>
+    {% endif %}
+    {% if best %}
+    <div class="stat-box good"><div class="value">{{ rubric_avgs[best] }}</div><div class="label">Best: {{ best }}</div></div>
+    {% endif %}
+    {% if weakest %}
+    <div class="stat-box bad"><div class="value">{{ rubric_avgs[weakest] }}</div><div class="label">Weakest: {{ weakest }}</div></div>
+    {% endif %}
+  </div>
+</div>
+
+{% if best %}
+<div class="card">
+  <h3>Rubric Averages (0-10)</h3>
+  {% for c, v in rubric_avgs.items() %}
+  {% if v is not none %}
+  <div class="bar-row">
+    <div class="bar-label">{{ c }}</div>
+    <div class="bar-track"><div class="bar-fill {{ 'good' if v >= 8 else ('mid' if v >= 6 else 'bad') }}" style="width: {{ (v / 10 * 100) | round(1) }}%;"></div></div>
+    <div class="bar-value">{{ v }}</div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if recent %}
+<div class="card">
+  <h3>Recent Drills</h3>
+  <table class="data-table">
+    <tr><th>Date</th><th>Title</th><th>Time</th><th>Avg Score</th><th>Tests</th></tr>
+    {% for d in recent %}
+    <tr>
+      <td>{{ d.date }}</td>
+      <td>{{ d.title }}</td>
+      <td>{{ d.time_min }} min</td>
+      <td>{% if d.scores %}{{ (d.scores.values() | sum / d.scores.values() | length) | round(1) }}/10{% endif %}</td>
+      <td>{% if d.tests_total %}{{ d.tests_passed }}/{{ d.tests_total }}{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+{% if recent_mocks %}
+<div class="card">
+  <h3>Recent Mock Competitions</h3>
+  <table class="data-table">
+    <tr><th>Date</th><th>Problem</th><th>Coding Tests</th><th>Quiz Score</th><th>Time</th></tr>
+    {% for m in recent_mocks %}
+    <tr>
+      <td>{{ m.date }}</td>
+      <td>{{ m.problem_title }}</td>
+      <td>{{ m.tests_passed }}/{{ m.tests_total }}</td>
+      <td>{{ m.quiz_correct }}/{{ m.quiz_total }}</td>
+      <td>{{ m.time_min }} min</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+{% if not recent and not recent_mocks %}
+<div class="card">
+  {% if CURRENT_TRACK in ('All', 'SkillsUSA') %}
+  <p class="empty-state">No sessions logged yet. Head to the <a href="{{ url_for('problems_list') }}">Problem Bank</a>, start a <a href="{{ url_for('mock_setup') }}">Mock Competition</a>, or run a <a href="{{ url_for('packet_setup') }}">Full Packet</a> to get going.</p>
+  {% else %}
+  <p class="empty-state">No sessions logged yet. Head to the <a href="{{ url_for('problems_list') }}">Problem Bank</a> or take a <a href="{{ url_for('quiz_setup') }}">Knowledge Quiz</a> to get going.</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

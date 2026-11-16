@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Settings - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Settings</h1>
+
+<div class="card">
+  <h3>Training Track</h3>
+  <p style="font-size:12px; color:var(--muted); margin-top:-4px;">
+    Focus the whole app -- Problem Bank, Knowledge Quiz, and Log Drill -- on one goal.
+    Mock Competition, Full Packet, and Competition Format are SkillsUSA-specific
+    features, so they stay tucked away unless your track is SkillsUSA or All Content.
+  </p>
+  <form method="post" action="{{ url_for('set_track') }}">
+    <label>Track</label>
+    <select name="track" onchange="this.form.submit()">
+      <option value="All" {{ 'selected' if settings.track == 'All' }}>All Content -- see everything</option>
+      {% for t in tracks %}
+      <option value="{{ t }}" {{ 'selected' if settings.track == t }}>{{ track_labels[t] }}</option>
+      {% endfor %}
+    </select>
+    <noscript><div class="btn-row" style="margin-top:14px;"><button class="btn blue" type="submit">Set Track</button></div></noscript>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Python Institute Exam Facts</h3>
+  <p style="font-size:12px; color:var(--muted); margin-top:-4px;">
+    The real, official time limit and question count for each exam -- sourced directly from
+    pythoninstitute.org, not a prep-site estimate. None of these are free-coding exams; all
+    are multiple-choice/gap-fill/scenario-based, delivered through Pearson VUE.
+  </p>
+  <table class="data-table">
+    <tr><th>Cert</th><th>Exam Code</th><th>Time Limit</th><th>Questions</th><th>Pass Score</th></tr>
+    {% for t in tracks %}
+    {% set info = cert_exam_info.get(t) %}
+    {% if info %}
+    <tr>
+      <td>{{ t }}</td>
+      <td>{{ info.exam_code }}</td>
+      <td>{{ info.duration_min }} min <span style="color:var(--muted); font-size:11px;">(+{{ info.nda_tutorial_min }} min NDA/tutorial)</span></td>
+      <td>{{ info.questions }}</td>
+      <td>{{ info.pass_pct }}%</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h3>Reset Progress</h3>
+  <p style="font-size:12px; color:var(--muted); margin-top:-4px;">
+    Wipe logged practice history for just one track -- quiz attempt stats, quiz sessions,
+    and drill logs tied to it. Resetting SkillsUSA also clears Mock Competition and Full
+    Packet history, since those features are SkillsUSA-only. This does not touch your
+    competition dates, phase, or notes below.
+  </p>
+  {% for t in tracks %}
+  <div class="problem-list-item">
+    <div>
+      <strong>{{ track_labels[t] }}</strong>
+    </div>
+    <form method="post" action="{{ url_for('reset_track', track=t) }}"
+          onsubmit="return confirm('Reset all {{ t }} progress? This permanently deletes its quiz attempt history, quiz sessions, and drill logs{{ ' (plus Mock Competition and Full Packet history)' if t == 'SkillsUSA' else '' }}. This cannot be undone.');">
+      <button class="btn red small" type="submit">Reset {{ t }}</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h3>Competition Dates</h3>
+  <form method="post">
+    <label>NC State Competition Date</label>
+    <input type="date" name="competition_date_state" value="{{ settings.competition_date_state }}">
+
+    <label>Nationals Competition Date</label>
+    <input type="date" name="competition_date_nationals" value="{{ settings.competition_date_nationals }}">
+
+    <label>Notes</label>
+    <textarea name="notes" rows="4">{{ settings.notes }}</textarea>
+
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn green" type="submit">Save Settings</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>About This Data</h3>
+  <p style="font-size:13px; color:var(--muted-strong);">
+    All training data is stored locally in <code>data/trainer_data.json</code> inside this
+    project folder. Nothing is sent anywhere. If you had logged sessions in the original
+    tkinter version, they were imported automatically the first time this app ran.
+  </p>
+</div>
+{% endblock %}

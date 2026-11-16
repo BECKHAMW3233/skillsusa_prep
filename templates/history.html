@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}History - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">History</h1>
+
+<div class="card">
+  <h3>Drill Sessions</h3>
+  {% if drills %}
+  <table class="data-table">
+    <tr><th>Date</th><th>Title</th><th>Type</th><th>Time</th><th>Avg Score</th><th>Tests</th><th>Notes</th><th></th></tr>
+    {% for d in drills %}
+    <tr>
+      <td>{{ d.date }}</td>
+      <td>{{ d.title }}</td>
+      <td>{{ d.problem_type }}</td>
+      <td>{{ d.time_min }} min</td>
+      <td>{% if d.scores %}{{ (d.scores.values() | sum / d.scores.values() | length) | round(1) }}/10{% endif %}</td>
+      <td>{% if d.tests_total %}{{ d.tests_passed }}/{{ d.tests_total }}{% endif %}</td>
+      <td>{{ (d.notes or '')[:60] }}</td>
+      <td>
+        <form method="post" action="{{ url_for('delete_drill', item_id=d.id) }}" onsubmit="return confirm('Delete this drill session?');">
+          <button class="btn red small" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="empty-state">No drills logged yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Knowledge Quiz Sessions</h3>
+  {% if ksessions %}
+  <table class="data-table">
+    <tr><th>Date</th><th>Topic</th><th>Score</th><th></th></tr>
+    {% for k in ksessions %}
+    <tr>
+      <td>{{ k.date }}</td>
+      <td>{{ k.topic }}</td>
+      <td>{{ k.score_pct }}%{% if k.num_questions %} ({{ k.num_correct }}/{{ k.num_questions }}){% endif %}</td>
+      <td>
+        <form method="post" action="{{ url_for('delete_knowledge', item_id=k.id) }}" onsubmit="return confirm('Delete this quiz session?');">
+          <button class="btn red small" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="empty-state">No quiz sessions logged yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Mock Competitions</h3>
+  {% if mocks %}
+  <table class="data-table">
+    <tr><th>Date</th><th>Problem</th><th>Tests</th><th>Quiz</th><th>Time</th><th></th></tr>
+    {% for m in mocks %}
+    <tr>
+      <td>{{ m.date }}</td>
+      <td>{{ m.problem_title }}</td>
+      <td>{{ m.tests_passed }}/{{ m.tests_total }}</td>
+      <td>{{ m.quiz_correct }}/{{ m.quiz_total }}</td>
+      <td>{{ m.time_min }} min</td>
+      <td>
+        <form method="post" action="{{ url_for('delete_mock', item_id=m.id) }}" onsubmit="return confirm('Delete this mock session?');">
+          <button class="btn red small" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="empty-state">No mock competitions logged yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Full Packet Simulations</h3>
+  {% if packets %}
+  <table class="data-table">
+    <tr><th>Date</th><th>Programs</th><th>Handed In</th><th>Tests</th><th>Avg Rubric</th><th>Time</th><th></th></tr>
+    {% for p in packets %}
+    <tr>
+      <td>{{ p.date }}</td>
+      <td>{{ p.problem_titles | join(', ') }}</td>
+      <td>{{ p.problems_submitted }}/{{ p.problem_count }}</td>
+      <td>{% if p.tests_total_sum %}{{ p.tests_passed_total }}/{{ p.tests_total_sum }}{% endif %}</td>
+      <td>{% if p.avg_rubric is not none %}{{ p.avg_rubric }}/10{% endif %}</td>
+      <td>{{ p.total_minutes }} / {{ p.target_minutes }} min</td>
+      <td>
+        <form method="post" action="{{ url_for('delete_packet', item_id=p.id) }}" onsubmit="return confirm('Delete this packet session?');">
+          <button class="btn red small" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="empty-state">No full packet simulations logged yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

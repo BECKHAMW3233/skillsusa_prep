@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Quiz - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Knowledge Quiz: {{ topic }}</h1>
+
+<form method="post" action="{{ url_for('quiz_submit') }}">
+  <div class="card">
+    {% for q in questions %}
+    <div class="quiz-question">
+      <div class="q-topic">{{ q.topic }}</div>
+      <div class="q-text">{{ loop.index }}. {{ q.question }}</div>
+      {% for choice in q.choices %}
+      <label class="choice-option">
+        <input type="radio" name="answer_{{ q.id }}" value="{{ loop.index0 }}" required>
+        {{ choice }}
+      </label>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="btn-row">
+    <button class="btn green" type="submit">Submit Quiz</button>
+  </div>
+</form>
+{% endblock %}

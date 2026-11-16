@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Quiz - SkillsUSA Trainer{% endblock %}
+{% block content %}
+<h1 class="page-title">Knowledge Test Practice</h1>
+
+<div class="card">
+  <h3>Start a Quiz</h3>
+  <form method="post" action="{{ url_for('quiz_start') }}">
+    <label>Topic</label>
+    <select name="topic">
+      <option value="">Mixed Review (weighted toward weak spots)</option>
+      {% for t in topics %}
+      <option value="{{ t }}">{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Number of Questions</label>
+    <input type="number" name="count" value="10" min="3" max="40">
+
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn green" type="submit">Start Quiz</button>
+    </div>
+  </form>
+  <p style="font-size:11px; color:var(--muted); margin-top:10px;">
+    Questions you've missed or haven't seen recently are prioritized automatically.
+  </p>
+</div>
+
+<div class="card">
+  <h3>Topic Coverage</h3>
+  {% for c in coverage %}
+  <div class="bar-row">
+    <div class="bar-label">{{ c.topic }}</div>
+    <div style="font-size:12px; color:var(--muted-strong);">
+      {{ c.seen }}/{{ c.total_questions }} questions seen
+      {% if c.weak %}<span style="color:var(--red);"> &middot; {{ c.weak }} weak</span>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
